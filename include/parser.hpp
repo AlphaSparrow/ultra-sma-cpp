@@ -1,5 +1,4 @@
-#ifndef PARSE_HPP
-#define PARSER_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -14,5 +13,3 @@ class Parser{
     public:
         static std::vector<PricePoint> parseCSV(const std::string& filename);
 };
-
-#endif
