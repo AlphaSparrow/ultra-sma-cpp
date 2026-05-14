@@ -43,10 +43,11 @@ std::vector<double> Calculator::calculateEMA(const std::vector<PricePoint>& pric
 
 std::vector<Signal> Calculator::generateSignals(const std::vector<double>& fastMA, const std::vector<double>& slowMA){
     std::vector<Signal> signals;
-
     // safety checkpoint
     if(fastMA.size() != slowMA.size()) return signals;
+
     bool wasFastUP = false;
+    bool firstValid = false;
 
     for(size_t i = 0; i < fastMA.size(); ++i){
         if(fastMA[i] == 0.0 || slowMA[i] == 0.0){
@@ -56,9 +57,25 @@ std::vector<Signal> Calculator::generateSignals(const std::vector<double>& fastM
 
         bool isFastUP = fastMA[i] > slowMA[i];
 
-        if(i > 0 && fastMA[i-1] != 0.0 && slowMA[i-1] != 0.0){
-            if(isFastUP && !wasFastUP){signals.push_back(Signal::BUY)} // THE GOLDEN CROSS - SONE KI GATH
-            else if(!isFastUP && wasFastUP){signals.push_back(Signal::SELL)} // DEATH CROSS - MRITYU
+        if(!firstValid){
+            wasFastUP = isFastUP;
+            firstValid = true;
+            signals.push_back(Signal::HOLD);
+            continue;
         }
+
+            if(isFastUP && !wasFastUP) {
+                signals.push_back(Signal::BUY);
+            } // THE GOLDEN CROSS - SONE KI GATH
+            else if(!isFastUP && wasFastUP){
+                signals.push_back(Signal::SELL);
+            } // DEATH CROSS - MRITYU
+            else {
+                signals.push_back(Signal::HOLD); // PEHLA VALID DAY, NO HISTORY TO COMPARE GENTLEMEN
+            }
+
+            wasFastUP = isFastUP;
+
     }
+    return signals;
 }
