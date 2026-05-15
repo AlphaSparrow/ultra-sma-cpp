@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # -flto is ? idk gotta see
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_options(-O3 -march=native -ffast-math -flto)
+    add_compile_options(-O0 -march=native -ffast-math -flto)
     add_link_options(-flto)
 endif()
 
