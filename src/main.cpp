@@ -7,7 +7,7 @@
 #include "calculator.hpp"
 
 int main(){
-    std::string path = "data/stock_data.csv";
+    std::string path = "data/big_data.csv";
     std::cout << "SMA Truck on the highway!!" << '\n';
 
     std::vector<PricePoint> prices = Parser::parseCSV(path);
@@ -35,7 +35,6 @@ int main(){
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
     std::cout << std::fixed << std::setprecision(2);
-
 
     // BHAI COMMIT DEKH RAHE HO TO BHAI BATA DU, ISKO TYPE KRNE ME G** FAT GAYI THI
     std::cout << std::left  << std::setw(12) << "DATE"   << " | "
