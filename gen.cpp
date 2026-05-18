@@ -8,7 +8,7 @@ int main(){
     file << "Date,Close,Volume\n";
 
     double price = 100.0;
-    for(int i = 1; i <= 5000; ++i){
+    for(int i = 1; i <= 1000000; ++i){
         double change = ((rand() % 200) - 100) / 100.0;
         price =+ change;
         file << "2026-01-" << i << "," << price << "," << (rand() % 1000000) << '\n';
