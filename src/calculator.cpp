@@ -1,81 +1,83 @@
 #include "calculator.hpp"
-#include <deque>
 #include <numeric>
+#include <algorithm>
 
-std::vector<double> Calculator::calculateSMA(const std::vector<PricePoint>& prices, int windowSize){
-    std::vector<double> smaResults;
-    std::deque<double> window;
+void Calculator::calculateSMA(const std::vector<PricePoint>& prices, int windowSize, std::vector<double>& smaResults){
+    smaResults.clear();
+    if(prices.empty() || windowSize <= 0) return;
+
+    smaResults.reserve(prices.size());
     double sum = 0.0;
+    size_t i = 0;
 
-    for(const auto&p : prices){
-        window.push_back(p.close);
-        sum += p.close;
+    // No more fucking deques
+    size_t warmUpLimit = std::min(prices.size(), static_cast<size_t>(windowSize));
 
-        if(window.size() > windowSize) { 
-            sum -= window.front();
-            window.pop_front();
-        }
-
-        if(window.size() == windowSize){
-            smaResults.push_back(sum / windowSize);
-        }else{
-            smaResults.push_back(0.0); // Backup flag to tell not enough data yet
+    for(; i < warmUpLimit; ++i) {
+        sum += prices[i].close;
+        if(i < static_cast<size_t>(windowSize - 1)){
+            smaResults.push_back(0.0); // This tells there aint enough data kid
         }
     }
-    return smaResults;
+
+    if(static_cast<size_t>(windowSize) <= prices.size()) {
+        smaResults.push_back(sum / windowSize);
+    }
+
+    // Direct indexing instead of fricking DEQEEUE
+    for(; i < prices.size(); ++i){
+        sum = sum - prices[i - windowSize].close + prices[i].close;
+        smaResults.push_back(sum / windowSize);
+    }
 }
 
-std::vector<double> Calculator::calculateEMA(const std::vector<PricePoint>& prices, int windowSize) {
-    std::vector<double> emaResults;
-    double multiplier = 2.0 / (windowSize + 1);
-    double currentEma = 0.0;
+void Calculator::calculateEMA(const std::vector<PricePoint>& prices, int windowSize, std::vector<double>& emaResults) {
+    emaResults.clear();
+    if(prices.empty()) return;
 
-    for (size_t i = 0; i < prices.size(); ++i){
-        if(i == 0){
-            currentEma = prices[i].close;
-        }else{
-            currentEma = (prices[i].close - currentEma) * multiplier + currentEma;
-        }
+    emaResults.reserve(prices.size());
+    double multiplier = 2.0 / (windowSize + 1);
+
+    double currentEma = prices[0].close;
+    emaResults.push_back(currentEma);
+
+    for (size_t i = 1; i < prices.size(); ++i){
+        currentEma = (prices[i].close - currentEma) * multiplier + currentEma;
         emaResults.push_back(currentEma);
     }
-    return emaResults;
 }
 
-std::vector<Signal> Calculator::generateSignals(const std::vector<double>& fastMA, const std::vector<double>& slowMA){
-    std::vector<Signal> signals;
+void Calculator::generateSignals(const std::vector<double>& fastMA, const std::vector<double>& slowMA, std::vector<Signal>& signals){
+    signals.clear();
     // safety checkpoint
-    if(fastMA.size() != slowMA.size()) return signals;
+    if(fastMA.size() != slowMA.size() || fastMA.empty()) return;
 
-    bool wasFastUP = false;
-    bool firstValid = false;
+    signals.reserve(fastMA.size());
+    size_t i = 0;
+    
+    while(i < fastMA.size() && (fastMA[i] == 0.0 || slowMA[i] == 0)){
+        signals.push_back(Signal::HOLD);
+        ++i;
+    }
 
-    for(size_t i = 0; i < fastMA.size(); ++i){
-        if(fastMA[i] == 0.0 || slowMA[i] == 0.0){
-            signals.push_back(Signal::HOLD);
-            continue;
-        }
+    if(i < fastMA.size()){
+        bool wasFasUp = fastMA[i] > slowMA[i];
+        signals.push_back(Signal::HOLD);
+        ++i;
 
-        bool isFastUP = fastMA[i] > slowMA[i];
+        for(; i < fastMA.size(); ++i){
+            bool isFastUp = fastMA[i] > slowMA[i];
 
-        if(!firstValid){
-            wasFastUP = isFastUP;
-            firstValid = true;
-            signals.push_back(Signal::HOLD);
-            continue;
-        }
-
-            if(isFastUP && !wasFastUP) {
+            if(isFastUp && !wasFasUp){
                 signals.push_back(Signal::BUY);
-            } // THE GOLDEN CROSS - SONE KI GATH
-            else if(!isFastUP && wasFastUP){
+            }
+            else if (!isFastUp && wasFasUp){
                 signals.push_back(Signal::SELL);
-            } // DEATH CROSS - MRITYU
-            else {
-                signals.push_back(Signal::HOLD); // PEHLA VALID DAY, NO HISTORY TO COMPARE GENTLEMEN
+            }else {
+                signals.push_back(Signal::HOLD);
             }
 
-            wasFastUP = isFastUP;
-
+        wasFasUp = isFastUp;
+        }
     }
-    return signals;
 }

@@ -12,11 +12,11 @@ enum class Signal{
 class Calculator {
     public:
         // Calculates SMA using a sliding Window
-        static std::vector<double> calculateSMA(const std::vector<PricePoint>& prices,int windowSize);
+        static void calculateSMA(const std::vector<PricePoint>& prices,int windowSize, std::vector<double>& smaResults);
 
         // Calculates EMA using thee recusrive O)1) Formula
-        static std::vector<double> calculateEMA(const std::vector<PricePoint>& prices,int windowSize);
+        static void calculateEMA(const std::vector<PricePoint>& prices,int windowSize, std::vector<double>& emaResults);
 
         // Checking Crossovers
-        static std::vector<Signal> generateSignals(const std::vector<double>& fastMA, const std::vector<double>& slowMA);
+        static void generateSignals(const std::vector<double>& fastMA, const std::vector<double>& slowMA, std::vector<Signal>& signals);
 };

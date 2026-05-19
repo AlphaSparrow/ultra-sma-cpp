@@ -17,14 +17,19 @@ int main(){
         return 1;
     }
 
+    std::vector<double> fastSma;
+    std::vector<double> slowSma;
+    std::vector<double> ema;
+    std::vector<Signal> signals;
+
     // Start Clock just before the W16 Quad Turbo Engine
     auto start = std::chrono::high_resolution_clock::now();
 
-    auto fastSma = Calculator::calculateSMA(prices, 3);
-    auto slowSma = Calculator::calculateSMA(prices, 5);
-    auto ema     = Calculator::calculateEMA(prices, 5);
+    Calculator::calculateSMA(prices, 3, fastSma);
+    Calculator::calculateSMA(prices, 5, slowSma);
+    Calculator::calculateEMA(prices, 5, ema);
 
-    auto signals = Calculator::generateSignals(fastSma, slowSma);
+    Calculator::generateSignals(fastSma, slowSma, signals);
 
     auto end = std::chrono::high_resolution_clock::now();
 
